@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
+use App\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
@@ -14,7 +16,8 @@ class PostController extends Controller
      */
     public function index()
     {
-        //
+        $posts = Post::all();
+        return view('admin.posts.index', compact('posts'));
     }
 
     /**
@@ -24,7 +27,7 @@ class PostController extends Controller
      */
     public function create()
     {
-        //
+        return view('admin.posts.create');
     }
 
     /**
@@ -35,7 +38,35 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'title'=>'required|max:255',
+            'content'=>'required|max:65535'
+        ]);
+
+        $data = $request->all();
+
+        $post = new Post();
+        $post->fill($data);
+
+        $slug = Str::slug($data['title'], '-');
+
+        $checkPost = Post::where('slug', $slug)->first();
+
+        $counter = 2;
+
+        while($checkPost){
+            $slug =  Str::slug($data['title'] . '-' . $counter, '-');
+
+            $counter++;
+
+            $checkPost = Post::where('slug', $slug)->first();
+        }
+
+        $post->slug = $slug;
+
+        $post->save();
+
+        return redirect()->route('admin.posts.index')->with('status', 'Post creato con successo');
     }
 
     /**
@@ -44,9 +75,10 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Post $post)
     {
-        //
+
+        return view('admin.posts.show', compact('post'));
     }
 
     /**
