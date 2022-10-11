@@ -42,28 +42,10 @@ class PostController extends Controller
             'title'=>'required|max:255',
             'content'=>'required|max:65535'
         ]);
-
         $data = $request->all();
-
         $post = new Post();
         $post->fill($data);
-
-        $slug = Str::slug($data['title'], '-');
-
-        $checkPost = Post::where('slug', $slug)->first();
-
-        $counter = 2;
-
-        while($checkPost){
-            $slug =  Str::slug($data['title'] . '-' . $counter, '-');
-
-            $counter++;
-
-            $checkPost = Post::where('slug', $slug)->first();
-        }
-
-        $post->slug = $slug;
-
+        $post->slug = $this->SlugCreator($data);
         $post->save();
 
         return redirect()->route('admin.posts.index')->with('status', 'Post creato con successo');
@@ -87,9 +69,9 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Post $post)
     {
-        //
+        return view('admin.posts.edit', compact('post'));
     }
 
     /**
@@ -99,9 +81,22 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Post $post)
     {
-        //
+        $request->validate([
+            'title'=>'required|max:255',
+            'content'=>'required|max:65535'
+        ]);
+
+        $data=$request->all();
+        if($data['title'] !== $post->title){
+            $data['slug'] = $this->SlugCreator($data);
+        }
+
+
+        $post->update($data);
+
+        return redirect()->route('admin.posts.index')->with('status', 'Post modificato con successo');
     }
 
     /**
@@ -113,5 +108,19 @@ class PostController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    protected function SlugCreator($data){
+
+        $slug = Str::slug($data['title'], '-');
+        $slugcheck = Post::where('slug', $slug)->first();
+        $counter = 2;
+        while($slugcheck){
+            $slug = Str::slug($data['title'] . '-' . $counter, '-');
+            $slugcheck = Post::where('slug', $slug)->first();
+            $counter++;
+        }
+
+        return $slug;
     }
 }
