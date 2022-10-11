@@ -21,6 +21,11 @@
                         <td>
                             <a class="btn btn-info" href="{{route('admin.posts.show', ['post'=>$post->id])}}">Visualizza</a>
                             <a class="btn btn-warning" href="{{route('admin.posts.edit', ['post'=>$post->id])}}">Modifica</a>
+                            <form action="{{route('admin.posts.destroy', ['post'=>$post->id])}}" method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger">!Delete</button>
+                            </form>
                         </td>
                     </tr>
                 @endforeach

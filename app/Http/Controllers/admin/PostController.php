@@ -93,7 +93,6 @@ class PostController extends Controller
             $data['slug'] = $this->SlugCreator($data);
         }
 
-
         $post->update($data);
 
         return redirect()->route('admin.posts.index')->with('status', 'Post modificato con successo');
@@ -105,9 +104,10 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Post $post)
     {
-        //
+        $post->destroy($post->id);
+        return redirect()->route('admin.posts.index')->with('status', 'Post cancellato con successo');
     }
 
     protected function SlugCreator($data){
